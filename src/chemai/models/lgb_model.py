@@ -5,6 +5,28 @@ from __future__ import annotations
 from typing import Any
 
 import lightgbm as lgb
+import numpy as np
+import pandas as pd
+
+
+class NumpySafeLGBMRegressor:
+    """Обёртка над LGBMRegressor: predict на np.ndarray без предупреждения sklearn.
+
+    После fit на массиве LightGBM помечает модель как «с именами признаков»
+    (Column_0, …); предсказание тем же ndarray вызывает
+    ``X does not have valid feature names`` в scikit-learn.
+    """
+
+    def __init__(self, model: lgb.LGBMRegressor) -> None:
+        self._model = model
+
+    def predict(self, X) -> np.ndarray:
+        m = self._model
+        names = getattr(m, "feature_names_in_", None)
+        x = X
+        if names is not None and not isinstance(X, pd.DataFrame):
+            x = pd.DataFrame(np.asarray(X, dtype=np.float64), columns=list(names))
+        return np.asarray(m.predict(x), dtype=np.float64)
 
 
 def default_lgb_params() -> dict[str, Any]:
@@ -30,7 +52,7 @@ def train_lgb_regressor(
     params: dict[str, Any] | None = None,
     random_state: int = 42,
     stopping_rounds: int = 80,
-) -> lgb.LGBMRegressor:
+) -> NumpySafeLGBMRegressor:
     p = default_lgb_params()
     if params:
         p.update(params)
@@ -44,4 +66,4 @@ def train_lgb_regressor(
             lgb.log_evaluation(period=0),
         ],
     )
-    return model
+    return NumpySafeLGBMRegressor(model)
