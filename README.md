@@ -38,6 +38,10 @@ python run_pipeline.py --predict
 
 Результат: `submissions/final_submission.csv` с колонками `index,IC50,CC50,SI`.
 
+## Модели (ансамбль)
+
+На каждый таргет обучаются **не менее девяти** различных типов регрессоров; для IC50/CC50/SI **отдельно** задокументирована применимость (`Разработка/Эпики/Анализ_модельных_вариантов.md`), **веса** в ансамбле считаются по CV **независимо для каждого таргета**. Состав: LightGBM, XGBoost, RidgeCV, ElasticNetCV, HistGradientBoosting, RandomForest, ExtraTrees, GradientBoosting (sklearn), BayesianRidge; при установленном пакете — **CatBoost** (`pip install -e ".[dev,catboost]"`).
+
 ## Конфигурация
 
 Скопируйте `.env.example` в `.env` и при необходимости измените пути (`CHEM_DATA_DIR`, `CHEM_MODELS_DIR`, `CHEM_SUBMISSIONS_DIR`) и `CHEM_N_FOLDS`, `CHEM_N_CLUSTERS`.
