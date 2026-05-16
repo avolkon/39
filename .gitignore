@@ -230,3 +230,6 @@ submissions/*.csv
 !submissions/.gitkeep
 data/*.csv
 !data/.gitkeep
+
+# Локальный учебный конспект (не в репозитории)
+Разработка/Пошаговый_разбор_разработки_и_кода.md
