@@ -9,10 +9,8 @@ import joblib
 import numpy as np
 
 from chemai.features.build_features import add_chem_features
-from chemai.models.lgb_model import train_lgb_regressor
+from chemai.models.candidate_models import build_default_candidates, fit_all_final
 from chemai.models.log_wrappers import Expm1Predictor
-from chemai.models.ridge_model import train_ridge_cv
-from chemai.models.xgb_model import train_xgb_regressor
 from chemai.preprocessing.preprocessor import Preprocessor
 from chemai.utils.config import get_config
 from chemai.utils.data_loader import TARGETS, load_train, split_features_targets
@@ -47,6 +45,10 @@ def train_pipeline() -> None:
     x_full = full_pre.transform(x_raw)
     full_pre.save(cfg.models_dir / "preprocessor.joblib")
 
+    candidates = build_default_candidates(cfg.random_seed)
+    names = ", ".join(c.name for c in candidates)
+    logger.info("Кандидатов моделей: %d (%s)", len(candidates), names)
+
     bundle: dict[str, dict[str, object]] = {}
     weights: dict[str, dict[str, float]] = {}
     cv_report: dict[str, dict[str, float]] = {}
@@ -55,7 +57,7 @@ def train_pipeline() -> None:
         y_raw = y_df[target].to_numpy(dtype=np.float64)
         use_log = cfg.log_transform_ic50_cc50 and target in ("IC50", "CC50")
 
-        fold_scores: dict[str, list[float]] = {"lgb": [], "xgb": [], "ridge": []}
+        fold_scores: dict[str, list[float]] = {c.name: [] for c in candidates}
 
         for tr, va in cv.split(x_raw, y_raw):
             pre = Preprocessor(cfg.missing_threshold)
@@ -66,32 +68,11 @@ def train_pipeline() -> None:
             y_tr = _y_train_space(y_raw[tr], use_log)
             y_va_s = _y_train_space(y_raw[va], use_log)
 
-            m_lgb = train_lgb_regressor(
-                x_tr,
-                y_tr,
-                x_va,
-                y_va_s,
-                random_state=cfg.random_seed,
-            )
-            p_lgb = m_lgb.predict(x_va)
-            pred_o = np.expm1(p_lgb) if use_log else p_lgb
-            fold_scores["lgb"].append(rmse(y_raw[va], pred_o))
-
-            m_xgb = train_xgb_regressor(
-                x_tr,
-                y_tr,
-                x_va,
-                y_va_s,
-                random_state=cfg.random_seed,
-            )
-            p_xgb = m_xgb.predict(x_va)
-            pred_o = np.expm1(p_xgb) if use_log else p_xgb
-            fold_scores["xgb"].append(rmse(y_raw[va], pred_o))
-
-            m_rd = train_ridge_cv(x_tr, y_tr)
-            p_rd = m_rd.predict(x_va)
-            pred_o = np.expm1(p_rd) if use_log else p_rd
-            fold_scores["ridge"].append(rmse(y_raw[va], pred_o))
+            for cand in candidates:
+                m = cand.fit_fold(x_tr, y_tr, x_va, y_va_s, cfg.random_seed)
+                p = m.predict(x_va)
+                pred_o = np.expm1(p) if use_log else p
+                fold_scores[cand.name].append(rmse(y_raw[va], pred_o))
 
         inv_err = {k: 1.0 / (float(np.mean(v)) + 1e-8) for k, v in fold_scores.items()}
         s = sum(inv_err.values())
@@ -101,41 +82,19 @@ def train_pipeline() -> None:
             "CV средние RMSE (%s): %s; веса: %s", target, cv_report[target], weights[target]
         )
 
-        rng = np.random.default_rng(cfg.random_seed)
-        order = rng.permutation(len(x_full))
-        n_hold = max(1, int(0.1 * len(x_full)))
-        hold = order[:n_hold]
-        trn = order[n_hold:]
+        target_models: dict[str, object] = {}
+        for cand in candidates:
+            final_m = fit_all_final(cand, x_full, _y_train_space(y_raw, use_log), cfg.random_seed)
+            target_models[cand.name] = Expm1Predictor(final_m) if use_log else final_m
 
-        y_all = _y_train_space(y_raw, use_log)
-
-        lgb_m = train_lgb_regressor(
-            x_full[trn],
-            y_all[trn],
-            x_full[hold],
-            y_all[hold],
-            random_state=cfg.random_seed,
-        )
-        xgb_m = train_xgb_regressor(
-            x_full[trn],
-            y_all[trn],
-            x_full[hold],
-            y_all[hold],
-            random_state=cfg.random_seed,
-        )
-        rd_m = train_ridge_cv(x_full, y_all)
-
-        bundle[target] = {
-            "lgb": Expm1Predictor(lgb_m) if use_log else lgb_m,
-            "xgb": Expm1Predictor(xgb_m) if use_log else xgb_m,
-            "ridge": Expm1Predictor(rd_m) if use_log else rd_m,
-        }
+        bundle[target] = target_models
 
     artifact = {
         "preprocessor": full_pre,
         "models_by_target": bundle,
         "weights_by_target": weights,
         "targets_order": list(TARGETS),
+        "candidate_names": [c.name for c in candidates],
     }
     bundle_path = cfg.models_dir / "pipeline_bundle.joblib"
     joblib.dump(artifact, bundle_path)
