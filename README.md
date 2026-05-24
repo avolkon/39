@@ -4,7 +4,7 @@
 
 ## Где по ТЗ что лежит и что даёт скриншот
 
-По **`Разработка/подготовка/ТЗ_Хакатон.txt` (§«Итоговые материалы»)** в **Git-репозитории** должны быть: **код решения**, **описание подхода**, **инструкции по воспроизведению результатов**, **презентация проекта**; отдельно на платформе — **ссылка на видео** (обязательна для топ-10).
+По **`Разработка/подготовка/ТЗ_Хакатон.txt` (§«Итоговые материалы»)** в **Git-репозитории** должны быть: **код решения**, **описание подхода**, **инструкции по воспроизведению результатов**, **презентация проекта** (файлы удобно складывать в **`docs/presentation/`**); отдельно на платформе — **ссылка на видео** (обязательна для топ-10). Файлы сабмита пайплайна пишутся в **`docs/submissions/`** (настраивается через `CHEM_SUBMISSIONS_DIR`).
 
 Явный **скриншот лидерборда в ТЗ не требуется** и каталог под него не задан — это **рекомендованное подтверждение успешной отправки** решения для README. Файл хранится в репозитории как **`docs/leaderboard_first_submission.png`** (удобная стандартная папка для артефактов документации рядом с корневым `README.md`).
 
@@ -17,13 +17,13 @@
 ## Требования
 
 - Python **3.11+** (для Windows 11 рекомендуется **3.12+**)
-- Файлы соревнования: `data/train.csv`, `data/test.csv` (и опционально `data/sample_submission.csv`)
+- Файлы соревнования: `ml/data/train.csv`, `ml/data/test.csv` (и опционально `ml/data/sample_submission.csv`)
 
 <a id="data-csv-local"></a>
 
 ## Данные: куда положить `train.csv` и `test.csv`
 
-Чтобы программа запускалась без ошибок загрузки, скопируйте выдачу соревнования в **каталог `data/`** в корне репозитория (рядом с `data/.gitkeep`):
+Чтобы программа запускалась без ошибок загрузки, скопируйте выдачу соревнования в **каталог `ml/data/`** в корне репозитория (рядом с `ml/data/.gitkeep`):
 
 | Что добавить | Имя файла | Обязательно |
 |--------------|-----------|-------------|
@@ -31,30 +31,30 @@
 | тестовая выборка | **`test.csv`** | да, для `--predict` |
 | образец отправки | `sample_submission.csv` | нет, только подсказка по формату ответа |
 
-Имена **`train.csv`** и **`test.csv`** фиксированы в коде (`src/chemai/utils/data_loader.py`); другие имена без смены `CHEM_DATA_DIR` и правок кода не подхватятся.
+Имена **`train.csv`** и **`test.csv`** фиксированы в коде (`ml/src/chemai/utils/data_loader.py`); другие имена без смены `CHEM_DATA_DIR` и правок кода не подхватятся.
 
-Файлы **не коммитятся**: в `.gitignore` указано **`data/*.csv`**, чтобы большие CSV не попадали в git. После `git clone` на другой машине данные нужно **скопировать в `data/` снова** на этой машине.
+Файлы **не коммитятся**: в `.gitignore` указано **`ml/data/*.csv`**, чтобы большие CSV не попадали в git. После `git clone` на другой машине данные нужно **скопировать в `ml/data/` снова** на этой машине.
 
 Проверка из корня репозитория:
 
 ```powershell
-Test-Path .\data\train.csv
-Test-Path .\data\test.csv
+Test-Path .\ml\data\train.csv
+Test-Path .\ml\data\test.csv
 ```
 
 Открыть папку в проводнике (удобно перетащить файлы):
 
 ```powershell
-explorer.exe .\data
+explorer.exe .\ml\data
 ```
 
 ---
 
 ## Пошаговый план запуска (терминал)
 
-**Как читать пути.** Абсолютный путь к клону проекта в примерах **не используется**. Рабочая точка — **корень репозитория**: там лежат `run_pipeline.py`, `pyproject.toml`, каталог `src/`. Добраться до него можно из проводника (меню «Открыть в терминале») или поднимаясь вверх командой **`..`** (один уровень вверх) и затем заходя в нужную папку.
+**Как читать пути.** Абсолютный путь к клону проекта в примерах **не используется**. Рабочая точка — **корень репозитория**: там лежат `run_pipeline.py`, `pyproject.toml`, каталог `ml/` (данные, модели, исходники пакета `chemai` внутри **`ml/src/`**). Добраться до него можно из проводника (меню «Открыть в терминале») или поднимаясь вверх командой **`..`** (один уровень вверх) и затем заходя в нужную папку.
 
-Ниже примеры для **PowerShell** (Windows). Из корня репозитория путь к данным — относительный: `.\data\train.csv`.
+Ниже примеры для **PowerShell** (Windows). Из корня репозитория путь к данным — относительный: `.\ml\data\train.csv`.
 
 ### Шаг 1. Открыть терминал в корне репозитория
 
@@ -107,11 +107,11 @@ pip install -e ".[dev,catboost]"
 
 ### Шаг 5. Подготовить данные
 
-Убедитесь, что в **`data`** лежат **`train.csv`** и **`test.csv`** (подробности — раздел [«Данные»](#data-csv-local) выше):
+Убедитесь, что в **`ml/data`** лежат **`train.csv`** и **`test.csv`** (подробности — раздел [«Данные»](#data-csv-local) выше):
 
 ```powershell
-Test-Path .\data\train.csv
-Test-Path .\data\test.csv
+Test-Path .\ml\data\train.csv
+Test-Path .\ml\data\test.csv
 ```
 
 Должно вывестись `True` для обоих.
@@ -136,7 +136,7 @@ python run_pipeline.py --train --config .env
 python run_pipeline.py --train
 ```
 
-Артефакты: `models_saved/preprocessor.joblib`, `models_saved/pipeline_bundle.joblib`, `models_saved/metrics.json`.
+Артефакты: `ml/models_saved/preprocessor.joblib`, `ml/models_saved/pipeline_bundle.joblib`, `ml/models_saved/metrics.json`.
 
 ### Шаг 8. Предсказание и submission
 
@@ -144,12 +144,12 @@ python run_pipeline.py --train
 python run_pipeline.py --predict
 ```
 
-Результат: `submissions/final_submission.csv` с колонками `index,IC50,CC50,SI`.
+Результат: `docs/submissions/final_submission.csv` с колонками `index,IC50,CC50,SI`.
 
 ### Шаг 9. Проверка кода (после изменений)
 
 ```powershell
-ruff check src tests run_pipeline.py
+ruff check ml/src tests run_pipeline.py tools
 pytest -q
 ```
 
@@ -186,6 +186,17 @@ uv pip install -e ".[dev]"
 
 На каждый таргет обучаются **не менее девяти** различных типов регрессоров; для IC50/CC50/SI **отдельно** задокументирована применимость (`Разработка/Эпики/Анализ_модельных_вариантов.md`), **веса** в ансамбле считаются по CV **независимо для каждого таргета**. Состав: LightGBM, XGBoost, RidgeCV, ElasticNetCV, HistGradientBoosting, RandomForest, ExtraTrees, GradientBoosting (sklearn), BayesianRidge; при установленном пакете — **CatBoost** (`pip install -e ".[dev,catboost]"`).
 
+## EDA (разведочный анализ данных)
+
+Отчёт с таблицами и графиками: **`docs/eda/EDA_Report.md`** (рисунки в `docs/eda/figures/`). Экспертная аналитика по архитектуре моделей и улучшению метрик — **`docs/eda/Аналитическая_записка_архитектура_моделей.md`**.
+
+Пересборка отчёта EDA после обновления CSV:
+
+```bash
+uv pip install -e ".[dev]"
+uv run python tools/eda_generate_report.py
+```
+
 ## Конфигурация
 
 Скопируйте `.env.example` в `.env` и при необходимости измените пути (`CHEM_DATA_DIR`, `CHEM_MODELS_DIR`, `CHEM_SUBMISSIONS_DIR`) и `CHEM_N_FOLDS`, `CHEM_N_CLUSTERS`.
@@ -193,7 +204,7 @@ uv pip install -e ".[dev]"
 ## Качество кода
 
 ```bash
-ruff check src tests run_pipeline.py
+ruff check ml/src tests run_pipeline.py tools
 pytest -q
 ```
 
