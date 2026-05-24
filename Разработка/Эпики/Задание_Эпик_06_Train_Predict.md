@@ -4,7 +4,7 @@
 Связывает все слои в воспроизводимый сценарий Kaggle submission.
 
 ## Файлы
-`src/chemai/train.py`, `src/chemai/predict.py`, `run_pipeline.py`
+`ml/src/chemai/train.py`, `ml/src/chemai/predict.py`, `run_pipeline.py`
 
 ## Задача
 Сохранение `pipeline_bundle.joblib`, генерация `final_submission.csv`, `metrics.json`.
