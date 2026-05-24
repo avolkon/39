@@ -20,25 +20,26 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.4", "ruff>=0.4"]
+dev = ["pytest>=7.4", "ruff>=0.4", "matplotlib>=3.8"]
 nn = ["torch>=2.1"]
 optuna = ["optuna>=3.5"]
 catboost = ["catboost>=1.2"]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["ml/src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["ml/src"]
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-src = ["src", "tests", "run_pipeline.py"]
+src = ["ml/src", "tests", "run_pipeline.py", "tools"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
 "run_pipeline.py" = ["E501"]
+"tools/eda_generate_report.py" = ["E501", "B905"]
