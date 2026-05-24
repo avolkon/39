@@ -221,15 +221,15 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Competition / large artifacts
-models_saved/*.pkl
-models_saved/*.joblib
-models_saved/*.json
-models_saved/*.pth
-!models_saved/.gitkeep
-submissions/*.csv
-!submissions/.gitkeep
-data/*.csv
-!data/.gitkeep
+ml/models_saved/*.pkl
+ml/models_saved/*.joblib
+ml/models_saved/*.json
+ml/models_saved/*.pth
+!ml/models_saved/.gitkeep
+docs/submissions/*.csv
+!docs/submissions/.gitkeep
+ml/data/*.csv
+!ml/data/.gitkeep
 
 # Локальный учебный конспект (не в репозитории)
 Разработка/Пошаговый_разбор_разработки_и_кода.md
