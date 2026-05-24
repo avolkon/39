@@ -70,49 +70,38 @@ chemai-predict-cure/
 ├── requirements.txt              # Зависимости (lightgbm, xgboost, catboost, scikit-learn, torch, optuna, pandas, numpy, ...)
 ├── run_pipeline.py               # Основной скрипт: обучение + предсказание (или раздельно)
 │
-├── data/
-│   ├── train.csv                 # исходные данные (750 объектов)
-│   ├── test.csv                  # исходные данные (250 объектов)
-│   └── sample_submission.csv     # формат ответа
+├── ml/
+│   ├── data/
+│   │   ├── train.csv                 # исходные данные (750 объектов)
+│   │   ├── test.csv                  # исходные данные (250 объектов)
+│   │   └── sample_submission.csv     # формат ответа
+│   │
+│   ├── models_saved/                 # сохранённые модели (git-ignore)
+│       ├── scaler.pkl
+│       ├── lgb_ic50.pkl
+│       ├── lgb_cc50.pkl
+│       ├── lgb_si.pkl
+│       ├── xgb_ic50.pkl
+│       ├── ...
+│       └── neural_net.pth
+│   │
+│   └── src/                          # пакет setuptools: `ml/src/chemai/`
+│       └── chemai/
+│           ├── train.py              # полный цикл обучения, CV
+│           ├── predict.py            # загрузка бандла и submission
+│           ├── features/
+│           ├── models/
+│           ├── preprocessing/
+│           ├── validation/
+│           └── utils/
 │
 ├── notebooks/
 │   └── eda_and_validation.ipynb  # EDA, проверка связи SI vs CC50/IC50, распределения, корреляции
 │
-├── src/
-│   ├── __init__.py
-│   ├── features/
-│   │   ├── build_features.py     # добавление химических признаков (функция add_chem_features)
-│   │   └── select_features.py    # удаление низкодисперсных/высокопропущенных признаков
-│   │
-│   ├── models/
-│   │   ├── train_models.py       # обучение LightGBM, XGBoost, Ridge, нейросети (сохранение)
-│   │   ├── predict_ensemble.py   # загрузка моделей, ансамблирование
-│   │   └── neural_net.py         # архитектура многозадачной NN (PyTorch/TensorFlow)
-│   │
-│   ├── preprocessing/
-│   │   └── scaler.py             # класс-обёртка для StandardScaler (fit/save/load)
-│   │
-│   ├── validation/
-│   │   └── cv_splitter.py        # custom KFold с учётом химических кластеров (или стратификация)
-│   │
-│   └── utils/
-│       ├── metrics.py            # RMSE (средняя по трём таргетам)
-│       ├── postprocess.py        # обрезка отрицательных значений
-│       └── io_helpers.py         # загрузка/сохранение CSV
-│
-├── models_saved/                 # сохранённые модели (git-ignore)
-│   ├── scaler.pkl
-│   ├── lgb_ic50.pkl
-│   ├── lgb_cc50.pkl
-│   ├── lgb_si.pkl
-│   ├── xgb_ic50.pkl
-│   ├── ...
-│   └── neural_net.pth
-│
-├── submissions/                  # папка с предсказаниями
+├── docs/submissions/              # папка с предсказаниями (финальный CSV)
 │   └── final_submission.csv
 │
-└── presentation/                 # презентация и видео-ссылка (для топ-10)
+└── docs/presentation/            # презентация и видео-ссылка (для топ-10)
     ├── team_name_presentation.pdf
     └── video_link.txt
 
@@ -238,13 +227,13 @@ run_pipeline.py – объединяет всё:
 
 если флаг --train – обучает и сохраняет модели;
 
-если флаг --predict – загружает модели и генерирует submissions/final_submission.csv.
+если флаг --predict – загружает модели и генерирует docs/submissions/final_submission.csv.
 
-src/features/build_features.py – функция, добавляющая 5–10 доменных признаков (например, 'LogP_TPSA', 'Arom_Heavy_Ratio', 'Charge_Sum', 'fr_imide_flag', 'fr_sulfone_flag').
+ml/src/chemai/features/build_features.py – функция, добавляющая 5–10 доменных признаков (например, 'LogP_TPSA', 'Arom_Heavy_Ratio', 'Charge_Sum', 'fr_imide_flag', 'fr_sulfone_flag').
 
-src/models/train_models.py – используется Optuna для подбора гиперпараметров, обучение с 5-кратной кросс-валидацией.
+ml/src/chemai/train.py и модули `ml/src/chemai/models/` – обучение кандидатов и ансамбль; опционально Optuna в `hyperopt.py`.
 
-src/validation/cv_splitter.py – реализует стратификацию по квантилям SI или кластеризацию по молекулярному весу/количеству колец.
+ml/src/chemai/validation/cv_splitter.py – реализует стратификацию по квантилям SI или кластеризацию по молекулярному весу/количеству колец.
 
 requirements.txt – пример:
 
@@ -272,7 +261,7 @@ seaborn==0.12.2
    source .venv/bin/activate  # или .venv\Scripts\activate для Windows
 4. Установите зависимости:
    uv pip install -r requirements.txt
-5. Поместите `train.csv`, `test.csv`, `sample_submission.csv` в папку `data/`.
+5. Поместите `train.csv`, `test.csv`, `sample_submission.csv` в папку `ml/data/`.
 6. Запустите обучение: `python run_pipeline.py --train`
 7. Сделайте предсказание: `python run_pipeline.py --predict`
-8. Результат: `submissions/final_submission.csv`
+8. Результат: `docs/submissions/final_submission.csv`

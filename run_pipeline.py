@@ -17,7 +17,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="ChemAI train / predict pipeline")
     parser.add_argument("--train", action="store_true", help="Обучить модели и сохранить артефакты")
     parser.add_argument(
-        "--predict", action="store_true", help="Сгенерировать submissions/final_submission.csv"
+        "--predict", action="store_true", help="Сгенерировать docs/submissions/final_submission.csv"
     )
     parser.add_argument(
         "--config",

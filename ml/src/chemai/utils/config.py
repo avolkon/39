@@ -16,9 +16,9 @@ class Config(BaseSettings):
         extra="ignore",
     )
 
-    data_dir: Path = Field(default=Path("data"))
-    models_dir: Path = Field(default=Path("models_saved"))
-    submissions_dir: Path = Field(default=Path("submissions"))
+    data_dir: Path = Field(default=Path("ml/data"))
+    models_dir: Path = Field(default=Path("ml/models_saved"))
+    submissions_dir: Path = Field(default=Path("docs/submissions"))
     random_seed: int = Field(default=42)
     n_folds: int = Field(default=5, ge=2)
     n_clusters: int = Field(default=5, ge=2)
