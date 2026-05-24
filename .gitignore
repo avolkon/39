@@ -227,9 +227,19 @@ ml/models_saved/*.json
 ml/models_saved/*.pth
 !ml/models_saved/.gitkeep
 docs/submissions/*.csv
+docs/submissions/*.metrics_sidecar.json
 !docs/submissions/.gitkeep
 ml/data/*.csv
 !ml/data/.gitkeep
 
 # Локальный учебный конспект (не в репозитории)
 Разработка/Пошаговый_разбор_разработки_и_кода.md
+
+# Cursor IDE (локальные настройки/чаты)
+.cursor/
+
+# Локальный справочник git-авторов («автор 1»…«автор 4»); не коммитить e-mail и ФИО в общий историю случайным пушем этого файла
+.local-git-authors
+
+# Локальный скрипт подстановки GIT_AUTHOR_*/GIT_COMMITTER_* (не в репозитории)
+tools/set_git_author_env.ps1
