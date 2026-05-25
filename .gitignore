@@ -241,5 +241,5 @@ ml/data/*.csv
 # Локальный справочник git-авторов («автор 1»…«автор 4»); не коммитить e-mail и ФИО в общий историю случайным пушем этого файла
 .local-git-authors
 
-# Локальный скрипт подстановки GIT_AUTHOR_*/GIT_COMMITTER_* (не в репозитории)
-tools/set_git_author_env.ps1
+# Локальный скрипт подстановки GIT_AUTHOR_*/GIT_COMMITTER_* у корня (не в git)
+/set_git_author_env.ps1

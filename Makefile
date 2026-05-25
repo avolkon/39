@@ -1,14 +1,14 @@
-.PHONY: install lint format test train predict eda-report
+.PHONY: install lint format test train predict
 
 install:
 	uv venv
 	uv pip install -e ".[dev]"
 
 lint:
-	uv run ruff check ml/src tests run_pipeline.py tools
+	uv run ruff check ml/src tests run_pipeline.py
 
 format:
-	uv run ruff format ml/src tests run_pipeline.py tools
+	uv run ruff format ml/src tests run_pipeline.py
 
 test:
 	uv run pytest -q
@@ -18,6 +18,3 @@ train:
 
 predict:
 	uv run python run_pipeline.py --predict
-
-eda-report:
-	uv run python tools/eda_generate_report.py
