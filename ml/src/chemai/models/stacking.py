@@ -8,6 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import RidgeCV
+from sklearn.model_selection import KFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
@@ -17,7 +18,7 @@ from chemai.preprocessing.preprocessor import Preprocessor
 from chemai.utils.config import Config
 from chemai.utils.data_loader import TARGETS
 from chemai.utils.metrics import competition_score, rmse
-from chemai.validation.cv_splitter import ClusterKFold
+from chemai.validation.cv_splitter import make_cv_splitter
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +46,34 @@ def fit_meta_ridge(oof: np.ndarray, y_original: np.ndarray) -> Pipeline:
     ).fit(np.asarray(oof, dtype=np.float64), np.asarray(y_original, dtype=np.float64))
 
 
+def fit_meta_oof_ridge(
+    oof_base: np.ndarray,
+    y_original: np.ndarray,
+    *,
+    n_splits: int,
+    random_state: int,
+) -> tuple[np.ndarray, Pipeline]:
+    """Nested OOF meta: честная оценка meta-уровня (не in-sample predict на OOF)."""
+    n = len(y_original)
+    oof_meta = np.full(n, np.nan, dtype=np.float64)
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    for tr, va in kf.split(oof_base):
+        meta = fit_meta_ridge(oof_base[tr], y_original[tr])
+        oof_meta[va] = meta.predict(oof_base[va])
+    if np.isnan(oof_meta).any():
+        msg = "NaN в nested meta-OOF — проверьте n_splits"
+        raise RuntimeError(msg)
+    final_meta = fit_meta_ridge(oof_base, y_original)
+    return oof_meta, final_meta
+
+
 def collect_oof_for_target(
     x_raw: pd.DataFrame,
     y_raw: np.ndarray,
     candidates: list[ModelCandidate],
     cfg: Config,
     *,
+    full_pre: Preprocessor,
     use_log: bool,
 ) -> np.ndarray:
     """OOF-предсказания базовых моделей (n_samples × n_candidates) в исходной шкале таргета."""
@@ -59,15 +82,11 @@ def collect_oof_for_target(
     oof = np.full((n, c), np.nan, dtype=np.float64)
     y_s = y_train_space(y_raw, use_log)
 
-    cv = ClusterKFold(
-        n_splits=cfg.n_folds,
-        n_clusters=cfg.n_clusters,
-        random_state=cfg.random_seed,
-    )
+    cv = make_cv_splitter(cfg)
 
     for fold_id, (tr, va) in enumerate(cv.split(x_raw, y_raw)):
         pre = Preprocessor(cfg.missing_threshold)
-        pre.fit(x_raw.iloc[tr])
+        pre.fit_fold(x_raw.iloc[tr], full_pre)
         x_tr = pre.transform(x_raw.iloc[tr])
         x_va = pre.transform(x_raw.iloc[va])
         yt = y_s[tr]
@@ -147,6 +166,7 @@ def run_oof_stacking_cv(
     x_full: np.ndarray,
     cfg: Config,
     *,
+    full_pre: Preprocessor,
     si_blend: bool = False,
     fit_final: bool = True,
 ) -> dict[str, Any]:
@@ -162,10 +182,17 @@ def run_oof_stacking_cv(
     for target in TARGETS:
         y_raw = y_df[target].to_numpy(dtype=np.float64)
         use_log = cfg.log_transform_ic50_cc50 and target in ("IC50", "CC50")
-        oof = collect_oof_for_target(x_raw, y_raw, candidates, cfg, use_log=use_log)
-        meta = fit_meta_ridge(oof, y_raw)
+        oof_base = collect_oof_for_target(
+            x_raw, y_raw, candidates, cfg, full_pre=full_pre, use_log=use_log
+        )
+        oof_meta, meta = fit_meta_oof_ridge(
+            oof_base,
+            y_raw,
+            n_splits=cfg.n_folds,
+            random_state=cfg.random_seed,
+        )
         meta_models[target] = meta
-        oof_pred[target] = np.asarray(meta.predict(oof), dtype=np.float64)
+        oof_pred[target] = oof_meta
         cv_report[target] = float(rmse(y_raw, oof_pred[target]))
         if fit_final:
             base_models[target] = fit_base_final_models(

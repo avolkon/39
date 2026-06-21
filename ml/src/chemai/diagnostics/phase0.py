@@ -234,8 +234,12 @@ def run_si_ablation(
     y_df: pd.DataFrame,
     x_full: np.ndarray,
     cfg: Config,
+    *,
+    full_pre: Preprocessor,
 ) -> list[dict[str, Any]]:
-    stack_result = run_oof_stacking_cv(x_raw, y_df, x_full, cfg, si_blend=False)
+    stack_result = run_oof_stacking_cv(
+        x_raw, y_df, x_full, cfg, full_pre=full_pre, si_blend=False
+    )
     return run_si_ablation_from_oof(y_df, stack_result)
 
 
@@ -387,7 +391,9 @@ def run_phase0_diagnostics(
     full_pre.fit(x_raw)
     x_full = full_pre.transform(x_raw)
 
-    stacking_oof = run_oof_stacking_cv(x_raw, y_df, x_full, cfg, si_blend=False, fit_final=False)
+    stacking_oof = run_oof_stacking_cv(
+        x_raw, y_df, x_full, cfg, full_pre=full_pre, si_blend=False, fit_final=False
+    )
     si_rows = run_si_ablation_from_oof(y_df, stacking_oof)
 
     lb_ref = {
