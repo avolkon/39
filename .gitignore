@@ -220,6 +220,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Архивы подготовки (данные соревнования — в ml/data локально)
+Разработка/**/*.zip
+
 # Competition / large artifacts
 ml/models_saved/*.pkl
 ml/models_saved/*.joblib
