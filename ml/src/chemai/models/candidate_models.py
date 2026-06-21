@@ -49,6 +49,7 @@ def _hold_split(
 
 def build_default_candidates(_random_seed: int) -> list[ModelCandidate]:
     """Девять базовых семейств; при установленном catboost — десятый кандидат."""
+
     def lgb_fold(
         x_tr: np.ndarray,
         y_tr: np.ndarray,
