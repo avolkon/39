@@ -35,10 +35,11 @@ pythonpath = ["ml/src"]
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-src = ["ml/src", "tests", "run_pipeline.py"]
+src = ["ml/src", "tests", "run_pipeline.py", "run_phase0_diagnostics.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP", "B", "SIM"]
 
 [tool.ruff.lint.per-file-ignores]
 "run_pipeline.py" = ["E501"]
+"ml/src/chemai/diagnostics/phase0.py" = ["E501"]

@@ -14,6 +14,8 @@
 
 Обучение: **`ml/src/chemai/train.py`** через **`run_pipeline.py --train`** — кросс‑валидация **`ClusterKFold`**, фильтрация признаков и масштабирование через **`Preprocessor`**, для каждого таргета **ансамбль** базовых регрессоров; из фолдовых RMSE выводятся **веса** (обратное среднее, нормировка по таргету). Лог‑признак **`log1p`** для IC50/CC50 включается флагом из конфига (в `.env` — **`CHEM_LOG_TRANSFORM_IC50_CC50`**).
 
+**Фаза 0 (stacking v2):** при **`CHEM_USE_STACKING=true`** — OOF stacking второго уровня (RidgeCV на OOF базовых моделей), см. `ml/src/chemai/models/stacking.py`. Диагностика: **`python run_phase0_diagnostics.py`** или **`make phase0`** → отчёты в `docs/eda/`.
+
 ## Требования
 
 - **Python ≥ 3.11** (для Windows 11 удобно **3.12+**).

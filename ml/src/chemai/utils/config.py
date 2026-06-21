@@ -26,6 +26,7 @@ class Config(BaseSettings):
     missing_threshold: float = Field(default=0.3, ge=0.0, le=1.0)
     use_neural_net: bool = Field(default=False)
     use_optuna: bool = Field(default=False)
+    use_stacking: bool = Field(default=False)
 
 
 _config_instance: Config | None = None

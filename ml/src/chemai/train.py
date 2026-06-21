@@ -1,4 +1,4 @@
-"""Обучение: честная CV с per-fold Preprocessor; финальные модели на полном наборе."""
+"""Обучение: baseline-ансамбль или OOF stacking (Фаза 0 baseline v2)."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ import numpy as np
 from chemai.features.build_features import add_chem_features
 from chemai.models.candidate_models import build_default_candidates, fit_all_final
 from chemai.models.log_wrappers import Expm1Predictor
+from chemai.models.stacking import run_oof_stacking_cv
 from chemai.preprocessing.preprocessor import Preprocessor
 from chemai.utils.config import get_config
 from chemai.utils.data_loader import TARGETS, load_train, split_features_targets
@@ -26,28 +27,19 @@ def _y_train_space(y_raw: np.ndarray, use_log: bool) -> np.ndarray:
     return y_raw.copy()
 
 
-def train_pipeline() -> None:
-    cfg = get_config()
-    cfg.models_dir.mkdir(parents=True, exist_ok=True)
-
-    df = load_train()
-    x_raw, y_df = split_features_targets(df)
-    x_raw = add_chem_features(x_raw)
-
+def _train_baseline(
+    x_raw,
+    y_df,
+    x_full,
+    full_pre,
+    cfg,
+    candidates,
+) -> tuple[dict, dict, dict, dict]:
     cv = ClusterKFold(
         n_splits=cfg.n_folds,
         n_clusters=cfg.n_clusters,
         random_state=cfg.random_seed,
     )
-
-    full_pre = Preprocessor(cfg.missing_threshold)
-    full_pre.fit(x_raw)
-    x_full = full_pre.transform(x_raw)
-    full_pre.save(cfg.models_dir / "preprocessor.joblib")
-
-    candidates = build_default_candidates(cfg.random_seed)
-    names = ", ".join(c.name for c in candidates)
-    logger.info("Кандидатов моделей: %d (%s)", len(candidates), names)
 
     bundle: dict[str, dict[str, object]] = {}
     weights: dict[str, dict[str, float]] = {}
@@ -89,18 +81,80 @@ def train_pipeline() -> None:
 
         bundle[target] = target_models
 
-    artifact = {
-        "preprocessor": full_pre,
-        "models_by_target": bundle,
-        "weights_by_target": weights,
-        "targets_order": list(TARGETS),
-        "candidate_names": [c.name for c in candidates],
+    return bundle, weights, cv_report, {}
+
+
+def _train_stacking(x_raw, y_df, x_full, cfg) -> tuple[dict, dict, dict, dict]:
+    result = run_oof_stacking_cv(x_raw, y_df, x_full, cfg, si_blend=False)
+    logger.info(
+        "OOF stacking competition_score=%.4f parts=%s",
+        result["oof_competition_score"],
+        result["oof_parts"],
+    )
+    extra = {
+        "stacking_mode": True,
+        "meta_models_by_target": result["meta_models_by_target"],
+        "base_models_by_target": result["base_models_by_target"],
+        "candidate_names": result["candidate_names"],
+        "oof_competition_score": result["oof_competition_score"],
+        "oof_parts": result["oof_parts"],
     }
+    return {}, {}, result["cv_mean_rmse"], extra
+
+
+def train_pipeline() -> None:
+    cfg = get_config()
+    cfg.models_dir.mkdir(parents=True, exist_ok=True)
+
+    df = load_train()
+    x_raw, y_df = split_features_targets(df)
+    x_raw = add_chem_features(x_raw)
+
+    full_pre = Preprocessor(cfg.missing_threshold)
+    full_pre.fit(x_raw)
+    x_full = full_pre.transform(x_raw)
+    full_pre.save(cfg.models_dir / "preprocessor.joblib")
+
+    candidates = build_default_candidates(cfg.random_seed)
+    names = ", ".join(c.name for c in candidates)
+    logger.info("Кандидатов моделей: %d (%s)", len(candidates), names)
+
+    if cfg.use_stacking:
+        bundle, weights, cv_report, stacking_extra = _train_stacking(x_raw, y_df, x_full, cfg)
+        artifact = {
+            "preprocessor": full_pre,
+            "stacking_mode": True,
+            "models_by_target": {},
+            "weights_by_target": {},
+            "meta_models_by_target": stacking_extra["meta_models_by_target"],
+            "base_models_by_target": stacking_extra["base_models_by_target"],
+            "targets_order": list(TARGETS),
+            "candidate_names": stacking_extra["candidate_names"],
+        }
+        metrics_payload = {
+            "mode": "stacking_v2",
+            "cv_mean_rmse": cv_report,
+            "oof_competition_score": stacking_extra["oof_competition_score"],
+            "oof_parts": stacking_extra["oof_parts"],
+        }
+    else:
+        bundle, weights, cv_report, _ = _train_baseline(
+            x_raw, y_df, x_full, full_pre, cfg, candidates
+        )
+        artifact = {
+            "preprocessor": full_pre,
+            "stacking_mode": False,
+            "models_by_target": bundle,
+            "weights_by_target": weights,
+            "targets_order": list(TARGETS),
+            "candidate_names": [c.name for c in candidates],
+        }
+        metrics_payload = {"mode": "baseline", "cv_mean_rmse": cv_report, "weights": weights}
+
     bundle_path = cfg.models_dir / "pipeline_bundle.joblib"
     joblib.dump(artifact, bundle_path)
     logger.info("Сохранено: %s", bundle_path)
 
     metrics_path = cfg.models_dir / "metrics.json"
-    metrics_payload = {"cv_mean_rmse": cv_report, "weights": weights}
     metrics_path.write_text(json.dumps(metrics_payload, indent=2), encoding="utf-8")
     logger.info("Метрики CV: %s", metrics_path)

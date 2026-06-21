@@ -160,6 +160,20 @@ EDA фиксирует **совпадение** SI и CC50/IC50 на обуче�
 
 *Ранг и метрика актуальны на момент скриншота; после новых отправок отображение на платформе меняется.*
 
+### 6.4. Фаза 0 (2026-06-22): OOF stacking v2 в репозитории vs public LB
+
+После встраивания OOF stacking в пакет `chemai` (`CHEM_USE_STACKING=true`, `run_phase0_diagnostics.py`) зафиксировано:
+
+| Источник | OOF `competition_score` | Public LB | Примечание |
+|----------|-------------------------|-----------|------------|
+| Stacking cluster (код ≈ submission2, **in-sample meta на OOF**) | **556.95** | **349.31** | Δ +207.6 — OOF **не калиброван** к LB при per-fold preprocessor |
+| Baseline weighted ensemble (истор.) | — | **~365** | `train.py` без stacking |
+| Group split (submission4) | — | **373.04** | OOF улучшался, LB хуже |
+
+**Вывод Фазы 0 (Артур Сидоров):** gate OOF ≤320 **не пройден**; приоритет Фазы 1 — fix R1/R2 (единое признаковое пространство, leak-free CV) и out-of-fold мета-слой. Adversarial train/test AUC **0.48** — слабый сдвиг на уровне классификатора; дубликаты: **49/60** multi-групп с конфликтом IC50.
+
+Подробности: [`phase0_experiment_log.md`](phase0_experiment_log.md), [`duplicate_groups_report.md`](duplicate_groups_report.md).
+
 ---
 
 ## 7. Описание **финальной выбранной модели** (две роли: «боевой сабмит» и «архитектурная база»)

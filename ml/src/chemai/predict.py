@@ -1,4 +1,4 @@
-"""Инференс: загрузка артефактов, тот же feature engineering и submission CSV."""
+"""Инференс: baseline-ансамбль или OOF stacking."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import pandas as pd
 
 from chemai.features.build_features import add_chem_features
 from chemai.models.ensemble import Ensemble
+from chemai.models.stacking import predict_stacked_test
 from chemai.utils.config import get_config
 from chemai.utils.data_loader import INDEX_COL, load_test
 from chemai.utils.postprocess import postprocess
@@ -26,8 +27,7 @@ def predict_pipeline(*, bundle_path: Path | None = None) -> Path:
 
     artifact = joblib.load(path)
     pre = artifact["preprocessor"]
-    models = artifact["models_by_target"]
-    weights = artifact["weights_by_target"]
+    stacking_mode = bool(artifact.get("stacking_mode", False))
 
     test_df = load_test()
     if INDEX_COL in test_df.columns:
@@ -40,8 +40,17 @@ def predict_pipeline(*, bundle_path: Path | None = None) -> Path:
     x_df = add_chem_features(x_df)
     x_t = pre.transform(x_df)
 
-    ensemble = Ensemble(models, weights)
-    preds = ensemble.predict(x_t)
+    if stacking_mode:
+        preds = predict_stacked_test(
+            x_t,
+            artifact["meta_models_by_target"],
+            artifact["base_models_by_target"],
+            artifact["candidate_names"],
+        )
+    else:
+        ensemble = Ensemble(artifact["models_by_target"], artifact["weights_by_target"])
+        preds = ensemble.predict(x_t)
+
     out_df = pd.DataFrame({INDEX_COL: idx, **{c: preds[c].values for c in preds.columns}})
     out_df = postprocess(out_df)
     cols = [INDEX_COL, "IC50", "CC50", "SI"]
