@@ -52,6 +52,26 @@ class Preprocessor:
             len(self._dropped_columns),
         )
 
+    def fit_fold(self, df_train: pd.DataFrame, schema: Preprocessor) -> None:
+        """R1: фиксированный список колонок из full_pre; imputer/scaler только на train-фолде."""
+        if schema._feature_columns is None:
+            raise RuntimeError("schema: сначала вызовите fit() на полном train")
+        self.missing_threshold = schema.missing_threshold
+        self._feature_columns = list(schema._feature_columns)
+        self._dropped_columns = list(schema._dropped_columns)
+
+        numeric = df_train.select_dtypes(include=[np.number]).copy()
+        medians = numeric[self._feature_columns].median(numeric_only=True)
+        self._medians = medians.reindex(self._feature_columns)
+
+        train_matrix = numeric[self._feature_columns].fillna(self._medians)
+        self._scaler = StandardScaler()
+        self._scaler.fit(train_matrix)
+
+    def fit_transform_fold(self, df_train: pd.DataFrame, schema: Preprocessor) -> np.ndarray:
+        self.fit_fold(df_train, schema)
+        return self.transform(df_train)
+
     def transform(self, df: pd.DataFrame) -> np.ndarray:
         if self._feature_columns is None or self._medians is None:
             raise RuntimeError("Preprocessor: сначала вызовите fit()")
