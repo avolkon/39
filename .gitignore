@@ -241,8 +241,12 @@ ml/data/*.csv
 # Cursor IDE (локальные настройки/чаты)
 .cursor/
 
-# Локальный справочник git-авторов («автор 1»…«автор 4»); не коммитить e-mail и ФИО в общий историю случайным пушем этого файла
+# Локальный справочник авторов; не коммитить e-mail и ФИО в общий историю случайным пушем этого файла
 .local-git-authors
 
 # Локальный скрипт подстановки GIT_AUTHOR_*/GIT_COMMITTER_* у корня (не в git)
 /set_git_author_env.ps1
+
+# Локальные helpers для git filter-repo (не в git)
+/git_strip_coauthor.py
+/git_filter_repo_message_callback.py
