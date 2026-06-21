@@ -25,3 +25,13 @@ def test_preprocessor_fit_transform(tmp_path) -> None:
     pre.save(p)
     loaded = Preprocessor.load(p)
     assert np.allclose(loaded.transform(df), xt)
+
+
+def test_preprocessor_fit_transform_fold_matches_schema() -> None:
+    rng = np.random.default_rng(99)
+    df = pd.DataFrame({"x": rng.standard_normal(40), "y": rng.standard_normal(40)})
+    full = Preprocessor(missing_threshold=0.3)
+    full.fit(df)
+    fold = Preprocessor(missing_threshold=0.3)
+    xt = fold.fit_transform_fold(df.iloc[:25], full)
+    assert xt.shape == (25, len(full.get_feature_names()))
