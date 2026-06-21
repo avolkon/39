@@ -172,7 +172,7 @@ EDA фиксирует **совпадение** SI и CC50/IC50 на обуче�
 
 **Вывод Фазы 0 (Артур Сидоров):** gate OOF ≤320 **не пройден**; приоритет Фазы 1 — fix R1/R2 (единое признаковое пространство, leak-free CV) и out-of-fold мета-слой. Adversarial train/test AUC **0.48** — слабый сдвиг на уровне классификатора; дубликаты: **49/60** multi-групп с конфликтом IC50.
 
-Подробности: [`phase0_experiment_log.md`](phase0_experiment_log.md), [`duplicate_groups_report.md`](duplicate_groups_report.md).
+Подробности: [`phase0_experiment_log.md`](phase0_experiment_log.md), [`duplicate_groups_report.md`](duplicate_groups_report.md), [`ML_ревью_2026-06-22_фаза0_диагностика.md`](../../Разработка/Ревью/ML_ревью_2026-06-22_фаза0_диагностика.md).
 
 ---
 
