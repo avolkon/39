@@ -26,6 +26,8 @@ class Config(BaseSettings):
     missing_threshold: float = Field(default=0.3, ge=0.0, le=1.0)
     use_neural_net: bool = Field(default=False)
     use_optuna: bool = Field(default=False)
+    # 0 = без смеси (по умолчанию); (0,1] — SI := w·SI_model + (1-w)·CC50/IC50 (доменная связь)
+    si_domain_blend: float = Field(default=0.0, ge=0.0, le=1.0)
 
 
 _config_instance: Config | None = None

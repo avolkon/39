@@ -17,6 +17,7 @@ def test_add_chem_features_adds_expected_columns() -> None:
             "fr_imide": [0.0],
             "fr_sulfone": [2.0],
             "RingCount": [3],
+            "FractionCSP3": [0.5],
         }
     )
     out = add_chem_features(df)
@@ -26,3 +27,4 @@ def test_add_chem_features_adds_expected_columns() -> None:
     assert float(out["fr_imide_flag"].iloc[0]) == 0.0
     assert float(out["fr_sulfone_flag"].iloc[0]) == 1.0
     assert "Ring_LogP" in out.columns
+    assert "FractionCSP3_LogP" in out.columns

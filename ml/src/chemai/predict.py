@@ -43,7 +43,7 @@ def predict_pipeline(*, bundle_path: Path | None = None) -> Path:
     ensemble = Ensemble(models, weights)
     preds = ensemble.predict(x_t)
     out_df = pd.DataFrame({INDEX_COL: idx, **{c: preds[c].values for c in preds.columns}})
-    out_df = postprocess(out_df)
+    out_df = postprocess(out_df, si_domain_blend=cfg.si_domain_blend)
     cols = [INDEX_COL, "IC50", "CC50", "SI"]
     out_df = out_df[cols]
 
