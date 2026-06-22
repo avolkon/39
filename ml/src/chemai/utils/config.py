@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -27,6 +28,7 @@ class Config(BaseSettings):
     use_neural_net: bool = Field(default=False)
     use_optuna: bool = Field(default=False)
     use_stacking: bool = Field(default=False)
+    cv_strategy: Literal["cluster", "duplicate_group"] = Field(default="cluster")
 
 
 _config_instance: Config | None = None
