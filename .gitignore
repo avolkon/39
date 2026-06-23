@@ -224,6 +224,7 @@ __marimo__/
 Разработка/**/*.zip
 
 # Competition / large artifacts
+catboost_info/
 ml/models_saved/*.pkl
 ml/models_saved/*.joblib
 ml/models_saved/*.json
