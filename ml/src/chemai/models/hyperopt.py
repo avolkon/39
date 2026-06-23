@@ -32,6 +32,4 @@ def load_params(path: Path) -> dict[str, Any]:
 
 
 def run_optuna_stub() -> None:
-    logger.info(
-        "Optuna: задайте CHEM_USE_OPTUNA=true и реализуйте objective в hyperopt.py."
-    )
+    logger.info("Optuna: задайте CHEM_USE_OPTUNA=true и реализуйте objective в hyperopt.py.")
