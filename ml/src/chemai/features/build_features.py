@@ -52,4 +52,9 @@ def add_chem_features(df: pd.DataFrame) -> pd.DataFrame:
     else:
         logger.warning("Ring_LogP: нет RingCount и/или MolLogP")
 
+    if "FractionCSP3" in out.columns and "MolLogP" in out.columns:
+        out["FractionCSP3_LogP"] = out["FractionCSP3"] * out["MolLogP"]
+    else:
+        logger.warning("FractionCSP3_LogP: нет FractionCSP3 и/или MolLogP")
+
     return out
