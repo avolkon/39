@@ -1,0 +1,40 @@
+{
+  "source": "submission2_a4 (tools/author4_high_priority_submissions.py --only 2, ClusterKFold, без SI blend)",
+  "canonical_file": "submission_avo_chemai_integrated.csv",
+  "reference_md5": "4516ab8d7937731e1c13e1edeff7fd7c",
+  "stack_oof_competition_score": 557.22,
+  "n_rows": 250,
+  "describe": {
+    "IC50": {
+      "count": 250.0,
+      "mean": 298.275809,
+      "std": 442.995144,
+      "min": 42.525782,
+      "25%": 85.779062,
+      "50%": 133.653561,
+      "75%": 300.277138,
+      "max": 3877.824632
+    },
+    "CC50": {
+      "count": 250.0,
+      "mean": 752.981889,
+      "std": 633.588464,
+      "min": 145.968787,
+      "25%": 338.720578,
+      "50%": 556.66724,
+      "75%": 937.498345,
+      "max": 4108.435545
+    },
+    "SI": {
+      "count": 250.0,
+      "mean": 106.667625,
+      "std": 34.469072,
+      "min": 0.0,
+      "25%": 99.940167,
+      "50%": 118.082398,
+      "75%": 124.038837,
+      "max": 215.188067
+    }
+  },
+  "sample_checksum": 289481.330697009
+}
