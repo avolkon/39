@@ -1,0 +1,11 @@
+{
+  "label": "submission2_a4",
+  "oof_mean_rmse": 557.2170244090267,
+  "oof_parts": {
+    "IC50": 319.70484896643546,
+    "CC50": 564.5900199709838,
+    "SI": 787.3562042896612
+  },
+  "si_blend_w": null,
+  "split_mode": "cluster"
+}

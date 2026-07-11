@@ -1,0 +1,60 @@
+{
+  "timestamp_utc": "2026-07-10T22:03:46.250022+00:00",
+  "reference_file": "C:\\Users\\68788\\Documents\\GitHub\\pymephi\\39\\docs\\submissions\\submission2_a4.csv",
+  "reference_md5": "4516ab8d7937731e1c13e1edeff7fd7c",
+  "run1_md5": "89be73e3d3d2d2a33216cc1d835895c0",
+  "run2_md5": "45bc7ec846ba97163ad28988610f9ece",
+  "stable_across_runs": false,
+  "stacking_oof": {
+    "label": "submission2_a4",
+    "oof_mean_rmse": 557.2170244090267,
+    "oof_parts": {
+      "IC50": 319.70484896643546,
+      "CC50": 564.5900199709838,
+      "SI": 787.3562042896612
+    },
+    "si_blend_w": null,
+    "split_mode": "cluster"
+  },
+  "eda": {
+    "train_shape": [
+      751,
+      214
+    ],
+    "test_shape": [
+      250,
+      211
+    ],
+    "n_features": 210,
+    "targets_skew": {
+      "IC50": 3.7873809231802653,
+      "CC50": 2.056305676239741,
+      "SI": 15.634965244876815
+    },
+    "si_identity_max_err": 2.000888343900442e-11,
+    "pca_pc1_pc2_cum_variance": 0.32803407194671125,
+    "ica_n_components": 3,
+    "domain_features_added": [
+      "LogP_TPSA",
+      "Arom_Heavy_ratio",
+      "Charge_sum",
+      "fr_imide_flag",
+      "fr_sulfone_flag",
+      "Ring_LogP",
+      "FractionCSP3_LogP"
+    ],
+    "n_candidates": 9,
+    "candidate_names": [
+      "lgb",
+      "xgb",
+      "ridge",
+      "elastic_net",
+      "hist_gbrt",
+      "random_forest",
+      "extra_trees",
+      "grad_boosting_sklearn",
+      "bayesian_ridge"
+    ]
+  },
+  "public_lb_historical": 349.30995
+}
