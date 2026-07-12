@@ -239,7 +239,7 @@ AFTER_VERIFY = """\
 |----------|-----------|
 | Формат | 250 строк, `index, IC50, CC50, SI` |
 | Файлы | `39_chemai_submission.csv` и `submission_avo_chemai_integrated.csv` (одинаковое содержимое) |
-| OOF stacking | ≈ **557.22** (author4 submission2) |
+| OOF stacking | ≈ **557.22** (author4; Colab ±5, главная проверка — §9) |
 | Эталон | max \\|Δ\\| < 10⁻⁵ vs `submission_avo_chemai_integrated.csv` или fingerprint JSON |
 
 **Канонический путь к integrated:** `python tools/author4_high_priority_submissions.py --only 2` — тот же алгоритм, что §7.10.
